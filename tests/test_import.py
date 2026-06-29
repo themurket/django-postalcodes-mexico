@@ -51,12 +51,21 @@ class ImportPostalCodesIdempotencyTest(TestCase):
         self.addCleanup(os.remove, path)
         return path
 
-    def test_reimport_is_idempotent_even_without_sentinel_row(self):
+    def test_import_skips_when_already_loaded(self):
         path = self._write_fixture()
 
         call_command("importpostalcodesmx", file=path)
         self.assertEqual(PostalCode.objects.count(), 2)
 
-        PostalCode.objects.filter(id=1).delete()
         call_command("importpostalcodesmx", file=path)
+        self.assertEqual(PostalCode.objects.count(), 2)
+
+    def test_force_refreshes_without_duplicating(self):
+        path = self._write_fixture()
+
+        call_command("importpostalcodesmx", file=path)
+        PostalCode.objects.filter(d_asenta="Condesa").delete()
+        self.assertEqual(PostalCode.objects.count(), 1)
+
+        call_command("importpostalcodesmx", file=path, force=True)
         self.assertEqual(PostalCode.objects.count(), 2)

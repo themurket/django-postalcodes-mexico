@@ -26,6 +26,11 @@ class Command(BaseCommand):
             type=str,
             help="Specify the xml file that contains the postal codes",
         )
+        parser.add_argument(
+            "--force",
+            action="store_true",
+            help="Re-import even if postal codes are already loaded",
+        )
 
     def get_function_for_processing_xml_postal_codes(self, xml_file_name):
         if xml_file_name:
@@ -33,6 +38,13 @@ class Command(BaseCommand):
         return get_xml_postal_codes_data()
 
     def handle(self, *args, **options):
+        if PostalCode.objects.exists() and not options["force"]:
+            self.stdout.write(
+                self.style.WARNING(
+                    "Postal codes are already loaded; skipping import. Use --force to refresh."
+                )
+            )
+            return
         try:
             xml_tree = self.get_function_for_processing_xml_postal_codes(
                 options["file"]
