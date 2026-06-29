@@ -33,15 +33,6 @@ class Command(BaseCommand):
         return get_xml_postal_codes_data()
 
     def handle(self, *args, **options):
-        table_already_exist = PostalCode.objects.filter(id=1).exists()
-        if table_already_exist:
-            self.stdout.write(self.style.WARNING("Postal code table already exists."))
-            self.stdout.write(
-                self.style.WARNING(
-                    "Importing postal codes again could cause data inconsistencies, if you want to import postal codes again please delete the postal code table first."
-                )
-            )
-            return
         try:
             xml_tree = self.get_function_for_processing_xml_postal_codes(
                 options["file"]
@@ -60,6 +51,7 @@ class Command(BaseCommand):
         )
         postalCodes = generate_list_of_postalcode_objects(xml_tree)
         self.stdout.write("Creating database...")
+        PostalCode.objects.all().delete()
         PostalCode.objects.bulk_create([PostalCode(**data) for data in postalCodes])
         self.stdout.write(
             self.style.SUCCESS(
