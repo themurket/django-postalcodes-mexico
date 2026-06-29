@@ -4,6 +4,9 @@ Django service that serves Mexican postal-code data from the SEPOMEX catalog.
 Given a postal code it returns `{ codigoPostal, municipio, estado, colonias[] }`.
 Consumed by the events API as the provider behind `/api/v1/zip-code`.
 
+> Part of the **murket-infrastructure** stack. To run the full platform, clone and
+> start it from there first — see [`../murket-infrastructure/README.md`](../murket-infrastructure/README.md).
+
 ## Stack
 
 - Python 3.12 · Django 5.2 LTS · Gunicorn
