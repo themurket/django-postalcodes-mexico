@@ -1,5 +1,0 @@
-Django>=4.2,<5.0
-django-model-utils>=2.0
-requests==2.25.1
-psycopg2>=2.9.9
-gunicorn>=21.2.0
