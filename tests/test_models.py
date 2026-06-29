@@ -92,5 +92,30 @@ class TestDjango_postalcodes_mexico(TestCase):
         data = json.loads(response.content)
         self.assertEqual(data['colonias'], ['Del Valle Norte'])
 
+    def test_colonias_are_returned_in_alphabetical_order(self):
+        for i, asenta in enumerate(['Roma Norte', 'Condesa', 'Juárez']):
+            PostalCode.objects.create(
+                d_codigo='06700',
+                d_asenta=asenta,
+                D_mnpio='Cuauhtémoc',
+                d_ciudad='Ciudad de México',
+                d_CP='06700',
+                c_estado='09',
+                c_oficina='06700',
+                c_tipo_asenta='09',
+                c_mnpio='015',
+                id_asenta_cpcons=f'{i:04d}',
+                d_zona='Urbano',
+                c_cve_ciudad='01',
+            )
+
+        retrieve_postal_code_data = reverse(
+            "django_postalcodes_mexico:get-postal-code-data", args=("06700",)
+        )
+        response = self.client.get(retrieve_postal_code_data)
+        self.assertEqual(response.status_code, 200)
+        data = json.loads(response.content)
+        self.assertEqual(data['colonias'], ['Condesa', 'Juárez', 'Roma Norte'])
+
     def tearDown(self):
         pass

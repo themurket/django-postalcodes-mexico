@@ -26,6 +26,11 @@ class Command(BaseCommand):
             type=str,
             help="Specify the xml file that contains the postal codes",
         )
+        parser.add_argument(
+            "--force",
+            action="store_true",
+            help="Re-import even if postal codes are already loaded",
+        )
 
     def get_function_for_processing_xml_postal_codes(self, xml_file_name):
         if xml_file_name:
@@ -33,12 +38,10 @@ class Command(BaseCommand):
         return get_xml_postal_codes_data()
 
     def handle(self, *args, **options):
-        table_already_exist = PostalCode.objects.filter(id=1).exists()
-        if table_already_exist:
-            self.stdout.write(self.style.WARNING("Postal code table already exists."))
+        if PostalCode.objects.exists() and not options["force"]:
             self.stdout.write(
                 self.style.WARNING(
-                    "Importing postal codes again could cause data inconsistencies, if you want to import postal codes again please delete the postal code table first."
+                    "Postal codes are already loaded; skipping import. Use --force to refresh."
                 )
             )
             return
@@ -60,6 +63,7 @@ class Command(BaseCommand):
         )
         postalCodes = generate_list_of_postalcode_objects(xml_tree)
         self.stdout.write("Creating database...")
+        PostalCode.objects.all().delete()
         PostalCode.objects.bulk_create([PostalCode(**data) for data in postalCodes])
         self.stdout.write(
             self.style.SUCCESS(
